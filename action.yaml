@@ -1,0 +1,44 @@
+---
+name: 'helm-docs'
+
+description: 'Generate helm readme and changelogs, commit, then push'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Execute helm-docs to generate READMEs
+      shell: bash
+      run: |
+        helm-docs
+
+    - name: Run helm-changelog
+      shell: bash
+      run: helm-changelog -v info
+
+    - name: Commit generated README.md
+      shell: bash
+      run: |
+        for chart in $(cat charts-changed.txt) ; do
+          echo "=== $chart"
+          git add $chart/README.md
+        done
+
+        if [ -n "$(git diff --name-only --cached | grep README.md)" ] ; then
+          git commit -m 'feat(README): Update auto-generated READMEs [skip ci]'
+        fi
+
+    - name: Commit generated Changelog.md
+      shell: bash
+      run: |
+        for chart in $(cat charts-changed.txt) ; do
+          echo "=== $chart"
+          git add $chart/Changelog.md
+        done
+
+        if [ -n "$(git diff --name-only --cached | grep Changelog.md)" ] ; then
+          git commit -m 'feat(Changelog): Update auto-generated Changelogs [skip ci]'
+        fi
+
+    - name: Push changes
+      shell: bash
+      run: git push
