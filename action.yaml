@@ -23,10 +23,6 @@ runs:
           git add $chart/README.md
         done
 
-        if [ -n "$(git diff --name-only --cached | grep README.md)" ] ; then
-          git commit -m 'feat(README): Update auto-generated READMEs [skip ci]'
-        fi
-
     - name: Commit generated Changelog.md
       shell: bash
       run: |
@@ -35,8 +31,11 @@ runs:
           git add $chart/Changelog.md
         done
 
-        if [ -n "$(git diff --name-only --cached | grep Changelog.md)" ] ; then
-          git commit -m 'feat(Changelog): Update auto-generated Changelogs [skip ci]'
+    - name: Commit generated docs
+      shell: bash
+      run: |
+        if [ -n "$(git diff --name-only --cached | egrep 'README.md|Changelog.md')" ] ; then
+          git commit -a -m 'feat(helm-docs): Update generated helm docs [skip ci]'
         fi
 
     - name: Push changes
